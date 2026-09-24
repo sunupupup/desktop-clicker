@@ -209,6 +209,7 @@ class ClickTraceApp:
             self.drag_mode = "move"
         else:
             self.drag_mode = "draw"
+            self.drag_mask_origin = (px, py, 1, 1)
             self.mask = [px, py, 1, 1]
             self._draw_mask()
 
@@ -226,11 +227,21 @@ class ClickTraceApp:
             new_height = min(max(20, height0 + dy), self.CANVAS_HEIGHT - y0)
             self.mask = [x0, y0, new_width, new_height]
         else:
-            x = min(max(0, x0), self.CANVAS_WIDTH - 20)
-            y = min(max(0, y0), self.CANVAS_HEIGHT - 20)
-            right = min(max(x + 20, event.x), self.CANVAS_WIDTH)
-            bottom = min(max(y + 20, event.y), self.CANVAS_HEIGHT)
-            self.mask = [x, y, right - x, bottom - y]
+            current_x = min(max(0, event.x), self.CANVAS_WIDTH)
+            current_y = min(max(0, event.y), self.CANVAS_HEIGHT)
+            left, right = sorted((x0, current_x))
+            top, bottom = sorted((y0, current_y))
+            if right - left < 20:
+                if current_x >= x0:
+                    right = min(self.CANVAS_WIDTH, left + 20)
+                else:
+                    left = max(0, right - 20)
+            if bottom - top < 20:
+                if current_y >= y0:
+                    bottom = min(self.CANVAS_HEIGHT, top + 20)
+                else:
+                    top = max(0, bottom - 20)
+            self.mask = [left, top, right - left, bottom - top]
         self._draw_mask()
 
     def _mask_release(self, _event: tk.Event) -> None:
@@ -312,6 +323,7 @@ class ClickTraceApp:
         self.target_button.configure(text=f"测试按钮\n已点击 {self.click_count} 次")
         if self.pending_simulated is not None:
             settings, click = self.pending_simulated
+            self.physical_point = None
             self._record_event(
                 scenario=settings.scenario,
                 seed=settings.seed,
