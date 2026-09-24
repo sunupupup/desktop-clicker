@@ -14,11 +14,11 @@ Build a local Windows desktop utility with a target window containing only one b
 
 ## Safety boundary
 
-The controller dispatches simulated activations only to the single demo button in this same process. The mask is confined to the controller canvas and does not overlay or control other desktop windows. The program will not inject system mouse or keyboard events, inspect other windows, control browsers, evade detection, or interact with accounts or external services. Scenario names and configuration remain explicit in exported data so detector results can be analyzed against known labels.
+The controller dispatches simulated Tk press/release events only to the single demo button in this same process. The mask is confined to the controller canvas and does not overlay or control other desktop windows. The program will not inject system mouse or keyboard events, inspect other windows, control browsers, evade detection, or interact with accounts or external services. Scenario names and configuration remain explicit in exported data so detector results can be analyzed against known labels.
 
 ## Architecture
 
-Use Python's standard library and Tkinter. Keep trace generation as a pure module independent of the UI, with an application module that validates settings, presents the single-button target and controller window, displays recent events, and exports generated rows. Use a seeded `random.Random` instance per generation so a run can be reproduced without global random state. Schedule click activations with Tkinter's event loop and cancel outstanding callbacks on stop or close.
+Use Python's standard library and Tkinter. Keep trace generation as a pure module independent of the UI, with an application module that validates settings, presents the single-button target and controller window, displays recent events, and exports generated rows. Use a seeded `random.Random` instance per generation so a run can be reproduced without global random state. Schedule local Tk press/release events with Tkinter's event loop and cancel outstanding callbacks on stop or close.
 
 ## Data format
 

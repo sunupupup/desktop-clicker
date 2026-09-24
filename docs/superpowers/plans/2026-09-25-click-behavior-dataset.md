@@ -4,7 +4,7 @@
 
 **Goal:** Build a local Windows GUI with a single-button target window and a clicker controller whose draggable, resizable mask triggers random simulated clicks only on that target button.
 
-**Architecture:** A pure standard-library module will produce seeded random click schedules and event records. The Tkinter main window contains only the target button; a separate controller window edits a confined mask, starts/stops scheduled activations, shows recent records, and exports JSON or CSV. The schedule invokes the in-process target button callback and never injects system input.
+**Architecture:** A pure standard-library module will produce seeded random click schedules and event records. The Tkinter main window contains only the target button; a separate controller window edits a confined mask, starts/stops scheduled activations, shows recent records, and exports JSON or CSV. The schedule generates local Tk press/release events on the target button and never injects system input.
 
 **Tech Stack:** Python 3 standard library, Tkinter, `random.Random`, `json`, `csv`.
 
@@ -51,7 +51,7 @@
 - [ ] Create a target window whose only widget is one button; record manual presses in the controller's event log.
 - [ ] Create a controller window with validated event count, seed, interval, and pair-gap fields.
 - [ ] Draw a mask rectangle on a controller canvas; allow dragging the rectangle and resizing it from its lower-right handle.
-- [ ] Schedule seeded random coordinates inside the mask; activate only the target button's in-process callback and record every activation.
+- [ ] Schedule seeded random coordinates inside the mask; generate local Tk press/release events only on the target button and record every activation.
 - [ ] Provide start/stop controls and cancel pending callbacks on stop or close.
 - [ ] Show a bounded event preview and add JSON/CSV save dialogs that preserve the log if canceled or writing fails.
 - [ ] Surface validation and file errors in the controller without terminating the UI.
