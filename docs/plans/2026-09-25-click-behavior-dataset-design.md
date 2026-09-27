@@ -1,33 +1,25 @@
-# Click Behavior Dataset Simulator Design
+# Draggable Desktop Click Region Design
 
 ## Goal
 
-Build a local Windows desktop utility with a target window containing only one button and a separate clicker control window. The button records clicks; the clicker draws a draggable, resizable mask region and triggers random synthetic clicks only against that demo button so the owner can analyze their own app's click logging.
+Replace the in-process demo-button clicker with one movable desktop region for browser click-behavior testing.
 
-## Scope
+## User flow
 
-- Provide a target Tkinter window containing a single button. Physical button presses and simulated button activations are recorded in the controller's local event log.
-- Provide a separate Tkinter controller window with a draggable and resizable mask region.
-- Generate random-interval clicks with integer coordinates constrained to the current mask, with optional paired clicks after a configurable long pause.
-- Attach scenario labels, seed, sequence number, elapsed time, x/y coordinates, and origin (`manual` or `simulated`) to each event.
-- Preview recent events and export JSON or CSV locally.
+Choose a rectangle or ellipse, enter its dimensions and click strategy, then generate the region. Generation creates a visible floating overlay and deterministic finite click plan without clicking. While inactive, the user can drag the region. Activating it makes the overlay click-through and dispatches the planned clicks to the window below it. Deactivating pauses the plan; reactivation resumes the remaining clicks. Completion automatically returns the region to inactive. Generating again replaces the region and plan.
 
-## Safety boundary
+## Design
 
-The controller dispatches simulated Tk press/release events only to the single demo button in this same process. The mask is confined to the controller canvas and does not overlay or control other desktop windows. The program will not inject system mouse or keyboard events, inspect other windows, control browsers, evade detection, or interact with accounts or external services. Scenario names and configuration remain explicit in exported data so detector results can be analyzed against known labels.
+- Keep one controller window for shape, dimensions, count, seed, random interval, and optional paired-click settings.
+- Show one borderless, semi-transparent, topmost overlay using the selected shape.
+- In inactive mode the overlay accepts pointer input for dragging. In active mode the Windows extended transparent style passes pointer input through; the clicker resolves each desktop coordinate to its underlying window and posts mouse messages without moving the system cursor.
+- Store generated points relative to the region. Resolve them to desktop coordinates at dispatch time so moving the region before or between active segments remains correct.
+- Record absolute desktop coordinates and export the event log as JSON or CSV.
 
-## Architecture
+## Error handling
 
-Use Python's standard library and Tkinter. Keep trace generation as a pure module independent of the UI, with an application module that validates settings, presents the single-button target and controller window, displays recent events, and exports generated rows. Use a seeded `random.Random` instance per generation so a run can be reproduced without global random state. Schedule local Tk press/release events with Tkinter's event loop and cancel outstanding callbacks on stop or close.
+Validate settings and ensure the region fits the virtual desktop before generation. Report unsupported Windows overlay behavior, missing target windows, and `PostMessage` failures in the controller. Stop or pause on dispatch failure; preserve completed records. Posted messages may not be handled by every target application.
 
-## Data format
+## Limits
 
-Each event contains `scenario`, `seed`, `sequence`, `elapsed_ms`, `x`, `y`, `event_type`, and `origin`. The export includes a metadata object (scenario parameters and generator version) and an `events` array in JSON; CSV places the same metadata in leading comment rows and emits one event per row.
-
-## Failure behavior
-
-Reject negative or reversed intervals, malformed seeds, event counts outside the configured limit, and mask sizes without positive width/height before starting. Canceling a save dialog leaves the event log intact. File-write errors are surfaced in the UI without losing the event log. Stop and window close cancel pending timer callbacks.
-
-## Deferred
-
-Desktop-wide overlays, real input injection, browser integration, detector tuning, and online account testing are outside this project.
+This version handles one region at a time and supports rectangles and ellipses. The overlay can be moved while inactive. Windows may block input to applications running at a higher integrity level.

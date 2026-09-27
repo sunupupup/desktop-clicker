@@ -19,7 +19,20 @@ def export_csv(path: str | Path, metadata: dict[str, object], events: Iterable[C
         output.write("# metadata=" + json.dumps(metadata, ensure_ascii=False, separators=(",", ":")) + "\n")
         writer = csv.DictWriter(
             output,
-            fieldnames=["scenario", "seed", "sequence", "elapsed_ms", "x", "y", "event_type", "origin"],
+            fieldnames=[
+                "region_id",
+                "scenario",
+                "seed",
+                "sequence",
+                "scheduled_elapsed_ms",
+                "elapsed_ms",
+                "dispatch_delay_ms",
+                "target_response_confirmed",
+                "x",
+                "y",
+                "event_type",
+                "origin",
+            ],
         )
         writer.writeheader()
         writer.writerows(event_rows)

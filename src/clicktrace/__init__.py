@@ -1,1 +1,1 @@
-"""Local, in-process click behavior simulator for an owned test app."""
+"""Local Windows desktop click behavior simulator."""
