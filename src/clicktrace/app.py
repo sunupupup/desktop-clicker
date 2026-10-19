@@ -58,7 +58,8 @@ class ClickTraceApp:
         self.root = tk.Tk()
         self.root.title("桌面区域点击器")
         self.root.geometry("820x900+24+24")
-        self.root.minsize(740, 760)
+        # Allow the main window to shrink to half of its previous minimum size.
+        self.root.minsize(370, 380)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
 
         self.events: list[ClickEvent] = []
